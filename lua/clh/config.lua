@@ -1,5 +1,5 @@
 local default = {
-  -- code lense history coonfig
+  -- code lense history config
   history = {
     -- set max registered code lenes
     maxLength = 10,
