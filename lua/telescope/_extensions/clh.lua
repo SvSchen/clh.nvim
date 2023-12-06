@@ -13,15 +13,17 @@ local pickers = require("telescope.pickers")
 local function runCodelens(...)
   local entry = require("telescope.actions.state").get_selected_entry()
   require("telescope.actions").close(...)
-  local winid = vim.api.nvim_open_win(entry.value.bufNo, true, { relative = "win", row = 3, col = 3, width = 12, height = 3 })
-  vim.cmd("norm! " .. entry.value.lineNo .. "G")
+  local lineNo = clh.currentLineNo(entry.value)
+  local bufNo = entry.value.bufNo
+  local winid = vim.api.nvim_open_win(bufNo, true, { relative = "win", row = 3, col = 3, width = 12, height = 3 })
+  local _ = lineNo and vim.cmd("norm! " .. lineNo .. "G")
+  clh.removeCodeLens(entry.value)
   clh.registerAndRunCodeLens()
   vim.api.nvim_win_close(winid, true)
 end
 
 local function lensesHistoryEntryMaker()
   local function makeDisplay(entry)
-    print(vim.inspect(entry))
     local displayer = entry_display.create({
       separator = " : ",
       items = {
@@ -39,7 +41,6 @@ local function lensesHistoryEntryMaker()
     })
   end
   return function(entry)
-    print(vim.inspect(entry))
     return {
       tag = entry.bufNo .. ":" .. entry.lineNo,
       ordinal = entry.desc.where,

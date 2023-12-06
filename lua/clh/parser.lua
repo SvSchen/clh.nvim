@@ -13,7 +13,7 @@ local function parseTestCaseData(title, data)
   return whereWhat and title and { where = whereWhat[1], what = whereWhat[2], kind = title }
 end
 
-local function parseDesc(lens)
+local function lensDesc(lens)
   local command = lens and lens.command
   local title = command and command.title
   local data = command and command.arguments[1].data
@@ -24,5 +24,5 @@ local function parseDesc(lens)
 end
 
 return {
-  parseDesc = parseDesc,
+  lensDesc = lensDesc,
 }

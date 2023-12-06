@@ -30,6 +30,15 @@ local function add(historyEntry)
   return k and add1(k)
 end
 
+local function remove(historyEntry)
+  local function remove1(k)
+    lensesHistory[k] = nil
+    return lensesHistory
+  end
+  local k = historyEntry and key(historyEntry)
+  return k and remove1(k)
+end
+
 local function length()
   return vim.tbl_count(lensesHistory)
 end
@@ -60,6 +69,7 @@ end
 return {
   entry = entry,
   add = add,
+  remove = remove,
   take = take,
   asSortedList = asSortedList,
 }
