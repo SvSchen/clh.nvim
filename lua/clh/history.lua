@@ -68,6 +68,7 @@ end
 
 return {
   entry = entry,
+  key = key,
   add = add,
   remove = remove,
   take = take,

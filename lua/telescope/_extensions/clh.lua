@@ -22,35 +22,67 @@ local function runCodelens(...)
   vim.api.nvim_win_close(winid, true)
 end
 
-local function lensesHistoryEntryMaker()
+local function lensesHistoryEntryMaker(maxEntryColumnLength)
   local function makeDisplay(entry)
     local displayer = entry_display.create({
       separator = " : ",
       items = {
-        { remaining = true },
-        { remaining = true },
-        { remaining = true },
+        { width = maxEntryColumnLength[1] },
+        { width = maxEntryColumnLength[2] },
+        { width = maxEntryColumnLength[3] },
         { remaining = true },
       },
     })
     return displayer({
-      { entry.tag, "Number" },
-      { entry.value.desc.kind, "LspKindKeyword" },
-      { entry.value.desc.where, "Type" },
-      { entry.value.desc.what, "String" },
+      { entry.value.tag, "Number" },
+      { entry.value.kind, "LspKindKeyword" },
+      { entry.value.where, "Type" },
+      { entry.value.what, "String" },
     })
   end
   return function(entry)
     return {
-      tag = entry.bufNo .. ":" .. entry.lineNo,
-      ordinal = entry.desc.where,
+      ordinal = entry.where,
       value = entry,
       display = makeDisplay,
     }
   end
 end
 
+local function maxDisplayEntryColumnLength(displayEntryLengths)
+  local max = { 0, 0, 0, 0 }
+  local function updateMax(i, v)
+    if max[i] < v then
+      max[i] = v
+    end
+  end
+
+  for _, row in pairs(displayEntryLengths) do
+    updateMax(1, row.tag)
+    updateMax(2, row.kind)
+    updateMax(3, row.where)
+    updateMax(4, row.what)
+  end
+  return max
+end
+
+local function displayEntryLength(displayEntry)
+  return vim.tbl_map(function(v)
+    return v:len()
+  end, displayEntry)
+end
+
+local function displayEntry(historyEntry)
+  return {
+    tag = require("clh.history").key(historyEntry),
+    kind = historyEntry.desc.kind,
+    where = historyEntry.desc.where,
+    what = historyEntry.desc.what,
+  }
+end
+
 local function selectCodeLens()
+  local sortedDisplayEntries = vim.tbl_map(displayEntry, clh.sortedHistoryEntries())
   pickers
     .new({}, {
       prompt_title = "Code Lenses History",
@@ -66,8 +98,8 @@ local function selectCodeLens()
         end,
       },
       finder = finders.new_table({
-        results = clh.sortedHistoryEntries(),
-        entry_maker = lensesHistoryEntryMaker(),
+        results = sortedDisplayEntries,
+        entry_maker = lensesHistoryEntryMaker(maxDisplayEntryColumnLength(vim.tbl_map(displayEntryLength, sortedDisplayEntries))),
       }),
       attach_mappings = function(_, map)
         map("i", "<CR>", runCodelens)
