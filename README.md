@@ -1,7 +1,7 @@
 # clh.nvim
 Execute code lenses from everywhere.
 
-Code lenses are available at specific lines, such code lenses are run or debug an application or test. To avoid always jump back to the code lense position to execute a lens this plugin registered already executed lenses and makes those available from everywhere.
+Code lenses are available at specific lines, such code lenses are run or debug an application or test. To avoid always jump back to the code lens position to execute a lens this plugin registered already executed lenses and makes those available from everywhere.
 
 Note:
 Actually just tested with scala-lang code lenses.
@@ -41,9 +41,9 @@ vim.keymap.set(
 ## Options
 ```lua
 require("clh").setup({
-  -- code lense history config
+  -- code lens history config
   history = {
-    -- set max registered code lenes
+    -- set max registered code lenses
     maxLength = 10
   },
   -- select ui dialog config
@@ -59,4 +59,4 @@ require("clh").setup({
 
 ## Integrations
 Available integrations:
-- [Telescope](https://github.com/nvim-telescope/telescope.nvim), to select registred lenses with ui.
+- [Telescope](https://github.com/nvim-telescope/telescope.nvim), to select registered lenses with ui.

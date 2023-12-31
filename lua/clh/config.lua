@@ -1,7 +1,7 @@
 local default = {
-  -- code lense history config
+  -- code lens history config
   history = {
-    -- set max registered code lenes
+    -- set max registered code lenses
     maxLength = 10,
   },
   -- select ui dialog config
