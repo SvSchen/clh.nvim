@@ -13,13 +13,21 @@ local pickers = require("telescope.pickers")
 local function runCodelens(...)
   local entry = require("telescope.actions.state").get_selected_entry()
   require("telescope.actions").close(...)
-  local lineNo = clh.currentLineNo(entry.value)
-  local bufNo = entry.value.bufNo
+  local bufNo = entry.bufNo
+  local lineNo = clh.findLineNo(bufNo, entry.value)
   local winid = vim.api.nvim_open_win(bufNo, true, { relative = "win", row = 3, col = 3, width = 12, height = 3 })
   local _ = lineNo and vim.cmd("norm! " .. lineNo .. "G")
-  clh.removeCodeLens(entry.value)
+  clh.removeCodeLens(entry.value.key)
   clh.registerAndRunCodeLens()
   vim.api.nvim_win_close(winid, true)
+end
+
+local function displayEntry(historyEntry)
+  return {
+    kind = historyEntry.desc.kind,
+    where = historyEntry.desc.where,
+    what = historyEntry.desc.what,
+  }
 end
 
 local function lensesHistoryEntryMaker(maxEntryColumnLength)
@@ -34,23 +42,26 @@ local function lensesHistoryEntryMaker(maxEntryColumnLength)
       },
     })
     return displayer({
-      { entry.value.tag, "Number" },
       { entry.value.kind, "LspKindKeyword" },
       { entry.value.where, "Type" },
       { entry.value.what, "String" },
+      { entry.key, "Number" },
     })
   end
   return function(entry)
+    local dEntry = displayEntry(entry)
     return {
-      ordinal = entry.where,
-      value = entry,
+      ordinal = dEntry.where,
+      value = dEntry,
       display = makeDisplay,
+      bufNo = entry.bufNo,
+      key = require("clh.history").key(entry),
     }
   end
 end
 
 local function maxDisplayEntryColumnLength(displayEntryLengths)
-  local max = { 0, 0, 0, 0 }
+  local max = { 0, 0, 0 }
   local function updateMax(i, v)
     if max[i] < v then
       max[i] = v
@@ -58,27 +69,17 @@ local function maxDisplayEntryColumnLength(displayEntryLengths)
   end
 
   for _, row in pairs(displayEntryLengths) do
-    updateMax(1, row.tag)
-    updateMax(2, row.kind)
-    updateMax(3, row.where)
-    updateMax(4, row.what)
+    updateMax(1, row.kind)
+    updateMax(2, row.where)
+    updateMax(3, row.what)
   end
   return max
 end
 
-local function displayEntryLength(displayEntry)
+local function displayEntryLength(dEntry)
   return vim.tbl_map(function(v)
     return v:len()
-  end, displayEntry)
-end
-
-local function displayEntry(historyEntry)
-  return {
-    tag = require("clh.history").key(historyEntry),
-    kind = historyEntry.desc.kind,
-    where = historyEntry.desc.where,
-    what = historyEntry.desc.what,
-  }
+  end, dEntry)
 end
 
 local function selectCodeLens()
@@ -98,7 +99,7 @@ local function selectCodeLens()
         end,
       },
       finder = finders.new_table({
-        results = sortedDisplayEntries,
+        results = clh.sortedHistoryEntries(),
         entry_maker = lensesHistoryEntryMaker(maxDisplayEntryColumnLength(vim.tbl_map(displayEntryLength, sortedDisplayEntries))),
       }),
       attach_mappings = function(_, map)

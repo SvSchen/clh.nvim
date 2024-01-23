@@ -30,13 +30,12 @@ local function add(historyEntry)
   return k and add1(k)
 end
 
-local function remove(historyEntry)
+local function removeByKey(key)
   local function remove1(k)
     lensesHistory[k] = nil
     return lensesHistory
   end
-  local k = historyEntry and key(historyEntry)
-  return k and remove1(k)
+  return key and remove1(key)
 end
 
 local function length()
@@ -70,7 +69,7 @@ return {
   entry = entry,
   key = key,
   add = add,
-  remove = remove,
+  removeByKey = removeByKey,
   take = take,
   asSortedList = asSortedList,
 }

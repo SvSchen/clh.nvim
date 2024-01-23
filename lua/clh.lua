@@ -47,16 +47,11 @@ local function registerAndRunCodeLens()
   return registered
 end
 
-local function currentLineNo(lensEntry)
-  local bufNo = lensEntry and lensEntry.bufNo
-  return lensEntry.desc and findLineNo(bufNo, lensEntry.desc)
-end
-
 return {
   registerCodeLens = registerCodeLens,
   registerAndRunCodeLens = registerAndRunCodeLens,
   sortedHistoryEntries = history.asSortedList,
-  removeCodeLens = history.remove,
-  currentLineNo = currentLineNo,
+  removeCodeLens = history.removeByKey,
+  findLineNo = findLineNo,
   setup = config.setup,
 }
