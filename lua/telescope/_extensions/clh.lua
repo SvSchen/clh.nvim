@@ -17,7 +17,6 @@ local function runCodelens(...)
   local lineNo = clh.findLineNo(bufNo, entry.value)
   local winid = vim.api.nvim_open_win(bufNo, true, { relative = "win", row = 3, col = 3, width = 12, height = 3 })
   local _ = lineNo and vim.cmd("norm! " .. lineNo .. "G")
-  clh.removeCodeLens(entry.value.key)
   clh.registerAndRunCodeLens()
   vim.api.nvim_win_close(winid, true)
 end

@@ -21,21 +21,46 @@ local function key(historyEntry)
   return historyEntry.bufNo .. ":" .. historyEntry.lineNo
 end
 
-local function add(historyEntry)
-  local function add1(k)
-    lensesHistory[k] = historyEntry
-    return lensesHistory
-  end
-  local k = historyEntry and key(historyEntry)
-  return k and add1(k)
-end
-
 local function removeByKey(k)
   local function remove1()
     lensesHistory[k] = nil
     return lensesHistory
   end
   return k and remove1()
+end
+
+local function equalsDesc(desc, desc1)
+  local keys = desc and vim.tbl_keys(desc)
+  return keys
+      and desc1
+      and vim.fn.reduce(keys, function(acc, k)
+        return desc[k] == desc1[k] and acc
+      end, true)
+      or false
+end
+
+local function findDuplicates(historyEntry)
+  local function dupDesc(lensesHistoryEntry)
+    return equalsDesc(historyEntry.desc, lensesHistoryEntry.desc)
+  end
+  return historyEntry and vim.tbl_filter(dupDesc, lensesHistory)
+end
+
+local function deleteDuplicates(historyEntry)
+  for _, e in pairs(findDuplicates(historyEntry)) do
+    -- bug in vim.tbl_filter does not return the key correct
+    removeByKey(key(e))
+  end
+  return lensesHistory
+end
+
+local function add(historyEntry)
+  local function add1(k)
+    lensesHistory[k] = historyEntry
+    return lensesHistory
+  end
+  local k = historyEntry and key(historyEntry)
+  return k and deleteDuplicates(historyEntry) and add1(k)
 end
 
 local function length()
@@ -72,4 +97,5 @@ return {
   removeByKey = removeByKey,
   take = take,
   asSortedList = asSortedList,
+  equalsDesc = equalsDesc,
 }

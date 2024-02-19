@@ -11,21 +11,11 @@ local function findLens(bufNo, lineNo)
   end
 end
 
-local function equals(lensDesc, lensDesc1)
-  local keys = lensDesc and vim.tbl_keys(lensDesc)
-  return keys
-      and lensDesc1
-      and vim.fn.reduce(keys, function(acc, k)
-        return lensDesc[k] == lensDesc1[k] and acc
-      end, true)
-    or false
-end
-
 local function findLineNo(bufNo, lensDesc)
   local lenses = vim.lsp.codelens.get(bufNo)
   for _, lens in pairs(lenses) do
     local lensDesc1 = parser.lensDesc(lens)
-    if equals(lensDesc, lensDesc1) then
+    if history.equalsDesc(lensDesc, lensDesc1) then
       return lens.range.start.line + 1
     end
   end
