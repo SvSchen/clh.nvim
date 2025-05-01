@@ -1,16 +1,17 @@
 local lensesHistory = {}
 
-local function meta(bufNo, lineNo)
+local function meta(bufNo, lineNo, run)
   return {
     lineNo = lineNo,
     bufNo = bufNo,
     time = os.time(),
+    run = run,
   }
 end
 
-local function entry(bufNo, lineNo, desc)
+local function entry(bufNo, lineNo, desc, run)
   local function entry1()
-    local m = meta(bufNo, lineNo)
+    local m = meta(bufNo, lineNo, run)
     m["desc"] = desc
     return m
   end
@@ -31,12 +32,9 @@ end
 
 local function equalsDesc(desc, desc1)
   local keys = desc and vim.tbl_keys(desc)
-  return keys
-      and desc1
-      and vim.fn.reduce(keys, function(acc, k)
-        return desc[k] == desc1[k] and acc
-      end, true)
-      or false
+  return keys and desc1 and vim.fn.reduce(keys, function(acc, k)
+    return desc[k] == desc1[k] and acc
+  end, true) or false
 end
 
 local function findDuplicates(historyEntry)
