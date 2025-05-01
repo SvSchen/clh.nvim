@@ -21,6 +21,12 @@ local function runCodelens(...)
   vim.api.nvim_win_close(winid, true)
 end
 
+function openCodelens(...)
+  local entry = require("telescope.actions.state").get_selected_entry()
+  require("telescope.actions").close(...)
+  vim.api.nvim_set_current_buf(entry.bufNo)
+end
+
 local function displayEntry(historyEntry)
   return {
     kind = historyEntry.desc.kind,
@@ -102,8 +108,8 @@ local function selectCodeLens()
         entry_maker = lensesHistoryEntryMaker(maxDisplayEntryColumnLength(vim.tbl_map(displayEntryLength, sortedDisplayEntries))),
       }),
       attach_mappings = function(_, map)
-        map("i", "<CR>", runCodelens)
-        map("n", "<CR>", runCodelens)
+        map({ "i", "n" }, "<CR>", runCodelens)
+        map({ "i", "n" }, "<M-CR>", openCodelens)
         return true
       end,
     })
