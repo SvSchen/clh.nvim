@@ -16,7 +16,7 @@ end
 local function lensDesc(lens)
   local command = lens and lens.command
   local title = command and command.title
-  local data = command and command.arguments[1].data
+  local data = command and command.arguments and command.arguments[1].data
   local runDesc = data and title == "run" and parseRunData(title, data)
   local testDesc = data and title == "test" and parseTestData(title, data)
   local testCaseDesc = data and title == "test case" and parseTestCaseData(title, data)

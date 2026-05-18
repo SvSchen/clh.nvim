@@ -33,7 +33,8 @@ vim.keymap.set(
   "n",
   "<leader>cl",
   function()
-    return require("clh").registerAndRunCodeLens() or require("telescope").extensions.clh.selectCodeLens()
+	local clh = require("clh")
+    return clh.registerAndRunCodeLens() or clh.ui()
   end,
   { desc = "Register and run or select code lens" })
 ```
@@ -46,7 +47,7 @@ require("clh").setup({
     -- set max registered code lenses
     maxLength = 10
   },
-  -- select ui dialog config
+  -- select ui dialog config only for telescope
   ui = {
     -- set the width
     width = 0.7,
@@ -57,6 +58,18 @@ require("clh").setup({
 })
 ```
 
+## Snacks Code Lenses History customization
+```lua
+require("snacks").setup({
+    sources = {
+        codeLensesHistory = {
+            layout = yourLayout,
+        },
+    }
+})
+```
+
 ## Integrations
 Available integrations:
-- [Telescope](https://github.com/nvim-telescope/telescope.nvim), to select registered lenses with ui.
+- [Telescope](https://github.com/nvim-telescope/telescope.nvim), to select registered lenses with ui. (deprectated)
+- [Snacks.nvim](https://github.com/folke/snacks.nvim), to select registered lenses with ui.

@@ -26,7 +26,7 @@ local function codeLensEntryFromBuffer(bufNo)
   local lineNo = vim.api.nvim_win_get_cursor(0)[1]
   local lens = findLens(bufNo, lineNo)
   local lensDesc = parser.lensDesc(lens)
-  return history.entry(bufNo, lineNo, lensDesc, vim.lsp.codelens.run)
+  return lensDesc and history.entry(bufNo, lineNo, lensDesc, vim.lsp.codelens.run)
 end
 
 local function codeLensEntryFromTestExplorer(bufNo)
@@ -48,7 +48,7 @@ local function registerCodeLens()
   local metalsOk, conf = pcall(require, "metals.config")
   local bufNo = vim.api.nvim_get_current_buf()
   local lensEntry = nil
-  if metalsOk and conf.get_config_cache().settings.metals.testUserInterface == "Test Explorer" then
+  if metalsOk and conf.get_config_cache() and conf.get_config_cache().settings.metals.testUserInterface == "Test Explorer" then
     lensEntry = codeLensEntryFromTestExplorer(bufNo)
   else
     lensEntry = codeLensEntryFromBuffer(bufNo)
@@ -65,6 +65,17 @@ local function registerAndRunCodeLens()
   end
   return false
 end
+local function ui()
+  local hasSnacksPicker, _ = pcall(require, "snacks.picker")
+  local hasTelescope, telescope = pcall(require, "telescope")
+  if hasSnacksPicker then
+    require("clh.snacks").selectCodeLens()
+  elseif hasTelescope then
+    telescope.extensions.clh.selectCodeLens()
+  else
+    error("clh requires folke/snacks.nvim or nvim-telescope/telescope.nvim (deprecated)")
+  end
+end
 
 return {
   registerCodeLens = registerCodeLens,
@@ -73,4 +84,5 @@ return {
   removeCodeLens = history.removeByKey,
   findLineNo = findLineNo,
   setup = config.setup,
+  ui = ui,
 }
