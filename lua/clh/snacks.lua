@@ -6,6 +6,7 @@ local function selectCodeLens()
     actions = {
       runCodeLens = function(picker, item)
         picker:close()
+        local originWinId = vim.api.nvim_get_current_win()
         local clh = require("clh")
         local bufNo = item.bufNo
         local lineNo = clh.findLineNo(bufNo, item.desc)
@@ -13,6 +14,7 @@ local function selectCodeLens()
         local _ = lineNo and vim.cmd("norm! " .. lineNo .. "G")
         clh.registerAndRunCodeLens()
         vim.api.nvim_win_close(winid, true)
+        vim.api.nvim_set_current_win(originWinId)
       end,
       openCodeLens = function(picker, item)
         picker:close()
