@@ -2,6 +2,7 @@ local config = require("clh.config")
 local explorer = require("clh.explorer")
 local history = require("clh.history")
 local parser = require("clh.parser")
+local snacks = require("clh.snacks")
 
 local function codeLensEntryFromTestExplorer(bufNo)
   local explorerDesc = explorer.testDesc(bufNo)
@@ -15,7 +16,7 @@ local function codeLensEntryFromTestExplorer(bufNo)
         if dapOk then
           dap.run(explorer.dapArguments(explorerDesc.suiteUri, explorerDesc.fullName, {}))
         else
-          vim.notify("No dap installed!", vim.log.levels.ERROR)
+          error("No dap installed!")
         end
       end,
     }
@@ -37,11 +38,20 @@ local function registerCodeLens(clientId, lens)
   return lensDesc and history.add(lensDesc) and history.take(maxLength) or nil
 end
 
+local function dapReplWindow()
+  local snacksWinOk, _ = pcall(require, "snacks.win")
+  local dapReplOk, _ = require("dap.repl")
+  if snacksWinOk and dapReplOk then
+    snacks.dapReplWindow()
+  else
+    error("clh requires folke/snacks.nvim and mfussenegger/nvim-dap")
+  end
+end
 local function ui()
   local hasSnacksPicker, _ = pcall(require, "snacks.picker")
   local hasTelescope, telescope = pcall(require, "telescope")
   if hasSnacksPicker then
-    require("clh.snacks").selectCodeLens()
+    snacks.selectCodeLens()
   elseif hasTelescope then
     telescope.extensions.clh.selectCodeLens()
   else
@@ -68,4 +78,5 @@ return {
   removeCodeLens = history.removeByKey,
   setup = config.setup,
   ui = ui,
+  dapReplWindow = dapReplWindow,
 }
