@@ -1,25 +1,7 @@
 local lensesHistory = {}
 
-local function meta(bufNo, lineNo, run)
-  return {
-    lineNo = lineNo,
-    bufNo = bufNo,
-    time = os.time(),
-    run = run,
-  }
-end
-
-local function entry(bufNo, lineNo, desc, run)
-  local function entry1()
-    local m = meta(bufNo, lineNo, run)
-    m["desc"] = desc
-    return m
-  end
-  return desc and entry1()
-end
-
-local function key(historyEntry)
-  return historyEntry.bufNo .. ":" .. historyEntry.lineNo
+local function key(lensDesc)
+  return lensDesc.where .. ":" .. lensDesc.what .. ":" .. lensDesc.kind
 end
 
 local function removeByKey(k)
@@ -37,28 +19,15 @@ local function equalsDesc(desc, desc1)
   end, true) or false
 end
 
-local function findDuplicates(historyEntry)
-  local function dupDesc(lensesHistoryEntry)
-    return equalsDesc(historyEntry.desc, lensesHistoryEntry.desc)
-  end
-  return historyEntry and vim.tbl_filter(dupDesc, lensesHistory)
-end
-
-local function deleteDuplicates(historyEntry)
-  for _, e in pairs(findDuplicates(historyEntry)) do
-    -- bug in vim.tbl_filter does not return the key correct
-    removeByKey(key(e))
-  end
-  return lensesHistory
-end
-
-local function add(historyEntry)
+local function add(lensDesc)
   local function add1(k)
-    lensesHistory[k] = historyEntry
+    lensDesc["time"] = os.time()
+    lensesHistory[k] = lensDesc
     return lensesHistory
   end
-  local k = historyEntry and key(historyEntry)
-  return k and deleteDuplicates(historyEntry) and add1(k)
+  local k = lensDesc and key(lensDesc)
+  -- return k and deleteDuplicates(lensDesc) and add1(k)
+  return k and add1(k)
 end
 
 local function length()
@@ -89,7 +58,6 @@ local function take(count)
 end
 
 return {
-  entry = entry,
   key = key,
   add = add,
   removeByKey = removeByKey,
