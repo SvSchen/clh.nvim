@@ -1,42 +1,53 @@
 # clh.nvim
 Execute code lenses from everywhere.
 
-Code lenses are available at specific lines, such code lenses are run or debug an application or test. To avoid always jump back to the code lens position to execute a lens this plugin registered already executed lenses and makes those available from everywhere.
+Code lenses are available at specific lines, such as **run** or **debug** an application or test. 
+To avoid always jump back to the code lens position to execute a lens this plugin registered already executed lenses and makes those available from everywhere.
+To register a specific code lens it is required to hook into the code lens picker, actually only snacks is supported. 
+The selected code lens from the picker gets registered and can rerun from everywhere. 
 
 Note:
 Actually just tested with scala-lang code lenses.
 
 ## Installation
-lazy.nvim:
+vim.pack:
 ```lua
-{
-  'svschen/clh.nvim',
-  -- Optional config
-  opts = {
-    history = {
-      maxLength = 5
-    },
-    ui = {
-      width = 0.9
+vim.pack.add({ "https://github.com/folke/snacks.nvim", "https://github.com/svschen/clh.nvim" })
+require("snacks").setup({
+	picker = {
+		sources = {
+			codeLensesHistory = {
+				layout = custom-layout,
+			},
+            select = {
+				kinds = {
+					codelens = {
+						actions = {
+							confirm = function(picker, item, action)
+								picker:close()
+								vim.schedule(function()
+									local clh = require("clh")
+									clh.registerAndRunCodeLens(item)
+									clh.dapReplWindow()
+								end)
+							end,
+						},
+                    }
+                }
+            }
+        ...
+        }
     }
-  } 
-}
-```
+})
 
-## Quick start
-Re/define a keymap to either:
-- register and run a code lens on a code lense
-- execute the ui to select already registered code lenses otherwise
-
-```lua
 vim.keymap.set(
   "n",
   "<leader>cl",
   function()
 	local clh = require("clh")
-    return clh.registerAndRunCodeLens() or clh.ui()
+    return clh.runCodeLensPicker() or clh.ui()
   end,
-  { desc = "Register and run or select code lens" })
+  { desc = "Run code lens picker or select/run already registered code lens" })
 ```
 
 ## Options
@@ -47,29 +58,9 @@ require("clh").setup({
     -- set max registered code lenses
     maxLength = 10
   },
-  -- select ui dialog config only for telescope
-  ui = {
-    -- set the width
-    width = 0.7,
-    -- set the height
-    height = 0.5
-  }
-
-})
-```
-
-## Snacks Code Lenses History customization
-```lua
-require("snacks").setup({
-    sources = {
-        codeLensesHistory = {
-            layout = yourLayout,
-        },
-    }
 })
 ```
 
 ## Integrations
 Available integrations:
-- [Telescope](https://github.com/nvim-telescope/telescope.nvim), to select registered lenses with ui. (deprectated)
-- [Snacks.nvim](https://github.com/folke/snacks.nvim), to select registered lenses with ui.
+- [Snacks.nvim](https://github.com/folke/snacks.nvim), to register and select already registered lenses.

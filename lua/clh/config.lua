@@ -4,13 +4,6 @@ local default = {
     -- set max registered code lenses
     maxLength = 10,
   },
-  -- select ui dialog config
-  ui = {
-    -- set the width
-    width = 0.7,
-    -- set the height
-    height = 0.5,
-  },
 }
 
 local conf = default

@@ -58,7 +58,7 @@ local function ui()
     error("clh requires folke/snacks.nvim or nvim-telescope/telescope.nvim (deprecated)")
   end
 end
-local function runCodeLens()
+local function runCodeLensPicker()
   local lineNo = vim.api.nvim_win_get_cursor(0)[1] - 1
   local lenses = vim.lsp.codelens.get(0)
   local lensLines = vim.tbl_map(function(lens)
@@ -71,9 +71,18 @@ local function runCodeLens()
   return false
 end
 
+local function registerAndRunCodeLens(item)
+  local lens = item and item.lens
+  local client = item and item.client
+  local _ = lens and client and registerCodeLens(client.id, lens) or error("expected snacks lens item")
+  local cmd = lens and item.lens.command
+  local _ = cmd and client and client:exec_cmd(cmd)
+end
+
 return {
-  runCodeLens = runCodeLens,
+  runCodeLensPicker = runCodeLensPicker,
   registerCodeLens = registerCodeLens,
+  registerAndRunCodeLens = registerAndRunCodeLens,
   historyEntries = history.asSortedList,
   removeCodeLens = history.removeByKey,
   setup = config.setup,
